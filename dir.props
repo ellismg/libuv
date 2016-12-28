@@ -1,0 +1,39 @@
+﻿<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+  <OsEnvironment Condition="'$(OsEnvironment)'==''">$(OS)</OsEnvironment>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectDir>$(MSBuildThisFileDirectory)</ProjectDir>
+
+    <!-- Output directories -->
+    <BinDir Condition="'$(BinDir)'==''">$(ProjectDir)bin/</BinDir>
+    <ObjDir Condition="'$(ObjDir)'==''">$(ProjectDir)obj/</ObjDir>
+    <PackagesOutDir Condition="'$(PackagesOutDir)'==''">$(BinDir)packages/</PackagesOutDir>
+
+    <!-- Input Directories -->
+    <ToolsDir Condition="'$(ToolsDir)'==''">$(ProjectDir)Tools/</ToolsDir>
+    <BuildToolsTaskDir Condition="'$(BuildToolsTargets45)' == 'true' OR '$(MSBuildRuntimeType)' != 'Core'">$(ToolsDir)net45/</BuildToolsTaskDir>
+    <PackagingTaskDir Condition="'$(BuildToolsTaskDir)' != ''">$(BuildToolsTaskDir)</PackagingTaskDir>
+    <ArchGroup Condition="'$(ArchGroup)'==''">x64</ArchGroup>
+    <ConfigurationGroup Condition="'$(ConfigurationGroup)'==''">Debug</ConfigurationGroup>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BaseOutputPath Condition="'$(BaseOutputPath)'==''">$(BinDir)</BaseOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageOutputPath>$(PackagesOutDir)</PackageOutputPath>
+    <PackageDescriptionFile>$(ProjectDir)pkg/descriptions.json</PackageDescriptionFile>
+    <ReleaseNotes>https://go.microsoft.com/fwlink/?LinkID=799417</ReleaseNotes>
+    <ProjectUrl>https://dot.net</ProjectUrl>
+    <PackagePlatform Condition="'$(PackagePlatform)' == ''">$(Platform)</PackagePlatform>
+    <PackagePlatform Condition="'$(PackagePlatform)' == 'amd64'">x64</PackagePlatform>
+    <PreReleaseLabel>beta</PreReleaseLabel>
+    <SkipInstallLocallyBuiltPackages>true</SkipInstallLocallyBuiltPackages>
+  </PropertyGroup>
+
+  <Import Project="$(ToolsDir)Build.Common.props" Condition="Exists('$(ToolsDir)Build.Common.props')" />
+
+</Project>
