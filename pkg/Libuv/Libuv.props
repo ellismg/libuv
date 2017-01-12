@@ -41,13 +41,14 @@
     <BuildRID Include="$(PackageRID)">
       <Platform Condition="'$(ArchGroup)' == 'x64'">amd64</Platform>
       <Platform Condition="'$(ArchGroup)' != 'x64'">$(ArchGroup)</Platform>
-      <OSGroup>$(BuildConfiguration_OSGroup)</OSGroup>
+      <OSGroup>$(OSGroup)</OSGroup>
     </BuildRID>
   </ItemGroup>
 
   <ItemGroup>
     <_project Include="@(BuildRID)">
       <OSGroup Condition="'%(OSGroup)' == ''">Linux</OSGroup>
+      <OSGroup Condition="$(PackageRID.StartsWith('win'))">Windows_NT</OSGroup>
       <Platform Condition="'%(Platform)' == ''">amd64</Platform>
       <PackageTargetRuntime>%(Identity)</PackageTargetRuntime>
       <AdditionalProperties>PackageTargetRuntime=%(Identity);OSGroup=%(OSGroup);Platform=%(Platform)</AdditionalProperties>

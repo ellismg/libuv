@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="GetTargetMachineInfo" AssemblyFile="$(BuildToolsTaskDir)Microsoft.DotNet.Build.Tasks.dll"/>
+  <Target Name="CheckTestPlatforms">
+    <GetTargetMachineInfo Condition="'$(TargetOS)' == ''">
+      <Output TaskParameter="TargetOS" PropertyName="TargetOS" />
+    </GetTargetMachineInfo>
+    <PropertyGroup>
+      <TestDisabled Condition="'%(UnsupportedPlatformsItems.Identity)' == '$(TargetOS)'">true</TestDisabled>
+    </PropertyGroup>
+    <Message Condition="'%(UnsupportedPlatformsItems.Identity)' == '$(TargetOS)'"
+      Text="Skipping tests in $(AssemblyName) because it is not supported on $(TargetOS)" />
+  </Target>
+</Project>

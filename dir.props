@@ -17,6 +17,7 @@
     <PackagingTaskDir Condition="'$(BuildToolsTaskDir)' != ''">$(BuildToolsTaskDir)</PackagingTaskDir>
     <ArchGroup Condition="'$(ArchGroup)'==''">x64</ArchGroup>
     <ConfigurationGroup Condition="'$(ConfigurationGroup)'==''">Debug</ConfigurationGroup>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'==''">$(ObjDir)</BaseIntermediateOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -34,6 +35,7 @@
     <SkipInstallLocallyBuiltPackages>true</SkipInstallLocallyBuiltPackages>
   </PropertyGroup>
 
+  <Import Project="$(ToolsDir)BuildVersion.targets" Condition="Exists('$(ToolsDir)BuildVersion.targets')" />
   <Import Project="$(ToolsDir)Build.Common.props" Condition="Exists('$(ToolsDir)Build.Common.props')" />
 
 </Project>

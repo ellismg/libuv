@@ -7,6 +7,7 @@ REPO_ROOT="$SCRIPT_ROOT"
 SOURCE_ROOT="$REPO_ROOT/src"
 BINARY_ROOT="$REPO_ROOT/bin"
 OBJECT_ROOT="$REPO_ROOT/obj"
+SUBMODULE_ROOT="$REPO_ROOT/src/libuv"
 
 BUILD_TYPE=Debug
 CMAKE_BUILD_TYPE=Debug
@@ -61,6 +62,16 @@ done
 
 BINARY_DIR="$BINARY_ROOT/$TARGET_OS.x64.$BUILD_TYPE"
 OBJECT_DIR="$OBJECT_ROOT/$TARGET_OS.x64.$BUILD_TYPE"
+
+#get submodules if not present
+if [ "$(ls -A $SUBMODULE_ROOT)" ]; then
+     echo "Submodule already updated."
+else
+    echo "Updating submodule"
+    UPDATE_SUBMODULE = "git submodule update"
+    echo $UPDATE_SUBMODULE
+    eval $UPDATE_SUBMODULE
+fi
 
 # Ensure CMake is present
 if [ ! $(command -v "cmake") ]; then
