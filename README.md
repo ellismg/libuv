@@ -22,3 +22,5 @@ sudo apt-get install autotools-dev
 ```
 
 On Windows, install Python 2.7 or higher as dependency and msbuild.
+
+On MacOS, run cltools.sh to install autotools.
