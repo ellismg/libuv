@@ -123,9 +123,21 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 popd
-pushd $BINARY_DIR/lib  
-find -type l -exec bash -c 'ln -f "$(readlink "$0")" "$0"' {} \;
+pushd $BINARY_DIR/lib
+for n in *; 
+do
+   echo "$n"
+   if [[ -f "$n" ]]; then
+   if [[ ! -z $(readlink "$n") ]]; then
+     LINKVALUE=$(readlink "$n")
+     echo ln -f "$LINKVALUE" "$n" 
+     ln -f "$LINKVALUE" "$n"
+     if [[ $n == *$FILE_EXTENSION* ]]; then
+       mv $n $BINARY_DIR
+     fi
+   fi
+   fi
+done
 popd
-find $BINARY_DIR/lib -regex "^.*$FILE_EXTENSION" -exec mv '{}' $BINARY_DIR \;
 set -e
 echo "Build Succeeded."
