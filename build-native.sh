@@ -14,6 +14,8 @@ CMAKE_BUILD_TYPE=Debug
 BUILD_ARCH=x64
 HOST_OS=Linux
 FILE_EXTENSION=".so"
+#with the given install script this works on macs, need to override glibtoolize
+export LIBTOOLIZE="libtoolize"
 
 case $(uname -s) in
     Darwin)
@@ -80,45 +82,6 @@ else
     eval $UPDATE_SUBMODULE
 fi
 
-# Probe for clang/clang++ unless CC and CXX are already set
-CC=${CC:-}
-CXX=${CXX:-}
-
-if [ -z "$CC" ] || [ -z "$CXX" ]; then
-
-    # First look for `clang-3.X` or `clang-3X`
-    for minor_ver in {9..5}; do
-        if [ $(command -v "clang-3.$minor_ver") ] && [ $(command -v "clang++-3.$minor_ver") ]; then
-            CC=$(command -v "clang-3.$minor_ver")
-            CXX=$(command -v "clang++-3.$minor_ver")
-
-            break
-        fi
-
-        if [ $(command -v "clang-3$minor_ver") ] && [ $(command -v "clang++-3$minor_ver") ]; then
-            CC=$(command -v "clang-3$minor_ver")
-            CXX=$(command -v "clang++-3$minor_ver")
-
-            break
-        fi
-    done
-
-    # If CC and CXX are still unset, see if `clang` and `clang++` are present.
-    if [ -z "$CC" ] && [ -z "$CXX" ] && [ $(command -v "clang") -eq 0 ] && [ $command -v "clang++" -eq 0 ]; then
-        CC=$(command -v "clang")
-        CXX=$(command -v "clang++")
-    fi
-
-    # If CC and CXX are still unset, we couldn't find clang or clang++, so we give up.
-    if [ -z "$CC" ] || [ -z "$CXX" ]; then
-        echo "Could not find clang or clang++, please install clang 3.5 or higher or set CC and CXX to the path to clang an clang++ respectively."
-        exit 1
-    fi
-fi
-
-export CC="$CC"
-export CXX="$CXX"
-
 mkdir -p $BINARY_DIR
 mkdir -p $OBJECT_DIR
 
@@ -127,9 +90,6 @@ pushd "$OBJECT_DIR" > /dev/null 2>&1
 # Since it's possible that cmake or make could fail for a "real" reason,
 # let's disable set -e so we can popd out of the object directory if they fail.
 set +e
-
-echo "CC=$CC"
-echo "CXX=$CXX"
 
 #Call libuv build commands
 echo "Commencing build of native compenents"
@@ -163,7 +123,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 popd
-find $BINARY_DIR/lib -type l -exec bash -c 'ln -f "$(readlink -m "$0")" "$0"' {} \;
-find $BINARY_DIR/lib -regextype posix-extended -regex '^.*so' -exec mv '{}' $BINARY_DIR \;
+pushd $BINARY_DIR/lib  
+find -type l -exec bash -c 'ln -f "$(readlink "$0")" "$0"' {} \;
+popd
+find $BINARY_DIR/lib -regex "^.*$FILE_EXTENSION" -exec mv '{}' $BINARY_DIR \;
 set -e
 echo "Build Succeeded."
