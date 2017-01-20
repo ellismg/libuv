@@ -42,7 +42,7 @@ for /f "delims=" %%a in ('dir /b %__srcDir%') do set _TMP=%%a
 
 IF {%_TMP%}=={} (
   echo "Updating submodule"
-  set _update_submodule = "git submodule update"
+  set _update_submodule = "git submodule update --init --recursive"
   echo %_update_submodule%
   call %_update_submodule%
 ) ELSE (

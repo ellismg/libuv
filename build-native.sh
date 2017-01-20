@@ -11,14 +11,18 @@ SUBMODULE_ROOT="$REPO_ROOT/src/libuv"
 
 BUILD_TYPE=Debug
 CMAKE_BUILD_TYPE=Debug
+BUILD_ARCH=x64
 HOST_OS=Linux
+FILE_EXTENSION=".so"
 
 case $(uname -s) in
     Darwin)
         HOST_OS="OSX"
+        FILE_EXTENSION=".dylib"
         ;;
     Linux)
         HOST_OS="Linux"
+        FILE_EXTENSION=".so"
         ;;
     *)
         echo "Unknown OS: '$(uname -s)'"
@@ -45,6 +49,9 @@ while :; do
                     BUILD_TYPE=Debug
                     CMAKE_BUILD_TYPE=Debug
                 ;;
+                arm)
+                    BUILD_ARCH=arm
+                ;;
                 *)
                     echo "Unknown Configuration '$1'"
                     exit 1
@@ -60,23 +67,17 @@ while :; do
     shift
 done
 
-BINARY_DIR="$BINARY_ROOT/$TARGET_OS.x64.$BUILD_TYPE"
-OBJECT_DIR="$OBJECT_ROOT/$TARGET_OS.x64.$BUILD_TYPE"
+BINARY_DIR="$BINARY_ROOT/$TARGET_OS.$BUILD_ARCH.$BUILD_TYPE"
+OBJECT_DIR="$OBJECT_ROOT/$TARGET_OS.$BUILD_ARCH.$BUILD_TYPE"
+UPDATE_SUBMODULE="git submodule update --init --recursive"
 
 #get submodules if not present
 if [ "$(ls -A $SUBMODULE_ROOT)" ]; then
      echo "Submodule already updated."
 else
     echo "Updating submodule"
-    UPDATE_SUBMODULE = "git submodule update"
     echo $UPDATE_SUBMODULE
     eval $UPDATE_SUBMODULE
-fi
-
-# Ensure CMake is present
-if [ ! $(command -v "cmake") ]; then
-    echo "Could not find cmake, please ensure `cmake` is on PATH"
-    exit 1
 fi
 
 # Probe for clang/clang++ unless CC and CXX are already set
@@ -130,22 +131,39 @@ set +e
 echo "CC=$CC"
 echo "CXX=$CXX"
 
-(set -x ; cmake -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DCMAKE_INSTALL_PREFIX="$BINARY_DIR" -G "Unix Makefiles" "$SOURCE_ROOT")
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not generate build scripts, cmake failed."
-    popd > /dev/null 2>&1
-    exit 1
-fi
-
-(set -x ; make install -j)
-
+#Call libuv build commands
+echo "Commencing build of native compenents"
+echo .
+echo $SUBMODULE_ROOT
+pushd $SUBMODULE_ROOT
+echo "Building with autotools"
+(set -x; sh autogen.sh)
 if [ $? -ne 0 ]; then
     echo "ERROR: Build failed."
     popd > /dev/null 2>&1
     exit 1
 fi
-
+(sh configure --prefix=$BINARY_DIR)
+(set x; make -j)
+if [ $? -ne 0 ]; then
+    echo "ERROR: Build failed."
+    popd > /dev/null 2>&1
+    exit 1
+fi
+(set x; make check -j)
+if [ $? -ne 0 ]; then
+    echo "ERROR: Build failed."
+    popd > /dev/null 2>&1
+    exit 1
+fi
+(set x; make install -j)
+if [ $? -ne 0 ]; then
+    echo "ERROR: Build failed."
+    popd > /dev/null 2>&1
+    exit 1
+fi
+popd
+find $BINARY_DIR/lib -type l -exec bash -c 'ln -f "$(readlink -m "$0")" "$0"' {} \;
+find $BINARY_DIR/lib -regextype posix-extended -regex '^.*so' -exec mv '{}' $BINARY_DIR \;
 set -e
-
 echo "Build Succeeded."
