@@ -3,35 +3,26 @@
 setlocal
 
 set BUILD_TYPE=Debug
-set CMAKE_BUILD_TYPE=Debug
-set HOST_OS=Linux
+set HOST_OS=Windows_NT
 
 set __binDir=%~dp0\bin
 set __srcDir=%~dp0\src\libuv
-set __CMakeBinDir=""
-set __IntermediatesDir=""
-set __BuildArch=x64
-set CMAKE_BUILD_TYPE=Debug
+set __TargetArch=x64
 set __TargetOS=Windows_NT
-set __binRuntimeDir=%~dp0\bin\%__TargetOS%.%__BuildArch%.%CMAKE_BUILD_TYPE%
-set __buildOutputDir=%~dp0\src\libuv\%CMAKE_BUILD_TYPE%
+set __binRuntimeDir=%~dp0\bin\%__TargetOS%.%__TargetArch%.%BUILD_TYPE%
+set __buildOutputDir=%~dp0\src\libuv\%BUILD_TYPE%
 :: All CI machines use this
 set GYP_MSVS_VERSION=2015
 
 :Arg_Loop
 :: Since the native build requires some configuration information before msbuild is called, we have to do some manual args parsing
 if [%1] == [] goto :ToolsVersion
-if /i [%1] == [Release]     ( set CMAKE_BUILD_TYPE=release&&shift&goto Arg_Loop)
-if /i [%1] == [Debug]       ( set CMAKE_BUILD_TYPE=debug&&shift&goto Arg_Loop)
-
-if /i [%1] == [AnyCPU]      ( set __BuildArch=x64&&set __VCBuildArch=x86_amd64&&shift&goto Arg_Loop)
-if /i [%1] == [x86]         ( set __BuildArch=x86&&set __VCBuildArch=x86&&shift&goto Arg_Loop)
-if /i [%1] == [arm]         ( set __BuildArch=arm&&set __VCBuildArch=x86_arm&&set __SDKVersion="-DCMAKE_SYSTEM_VERSION=10.0"&&shift&goto Arg_Loop)
-if /i [%1] == [x64]         ( set __BuildArch=x64&&set __VCBuildArch=x86_amd64&&shift&goto Arg_Loop)
-if /i [%1] == [amd64]       ( set __BuildArch=x64&&set __VCBuildArch=x86_amd64&&shift&goto Arg_Loop)
-if /i [%1] == [arm64]       ( set __BuildArch=arm64&&set __VCBuildArch=arm64&&shift&goto Arg_Loop)
-
-if /i [%1] == [toolsetDir]  ( set "__ToolsetDir=%2"&&shift&&shift&goto Arg_Loop)
+if /i [%1] == [Release]     ( set BUILD_TYPE=release&&shift&goto Arg_Loop)
+if /i [%1] == [Debug]       ( set BUILD_TYPE=debug&&shift&goto Arg_Loop)
+if /i [%1] == [arm]         ( set __TargetArch=arm&&set __VCBuildArch=x86_arm&&set __SDKVersion="-DCMAKE_SYSTEM_VERSION=10.0"&&shift&goto Arg_Loop)
+if /i [%1] == [x86]         ( set __TargetArch=x86&&set __VCBuildArch=x86&&shift&goto Arg_Loop)
+if /i [%1] == [x64]         ( set __TargetArch=x64&&set __VCBuildArch=x86_amd64&&shift&goto Arg_Loop)
+if /i [%1] == [arm64]       ( set __TargetArch=arm64&&set __VCBuildArch=arm64&&shift&goto Arg_Loop)
 
 shift
 goto :Arg_Loop
@@ -62,7 +53,7 @@ if "%VisualStudioVersion%"=="14.0" (
 ) 
 
 :MissingVersion
-:: Can't find VS 2013+
+:: Can't find VS 2015+
 echo Error: Visual Studio 2015 required  
 echo        Please see https://github.com/dotnet/corefx/blob/master/Documentation/project-docs/developer-guide.md for build instructions.
 exit /b 1
@@ -71,14 +62,14 @@ exit /b 1
 :: Setup vars for VS2015
 set __VSVersion=vs2015
 set __PlatformToolset=v140
-if NOT "%__BuildArch%" == "arm64" ( 
+if NOT "%__TargetArch%" == "arm64" ( 
     :: Set the environment for the native build
     call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %__VCBuildArch%
 )
 goto :SetupDirs
 
 : Check for Python Installation
-python --version 2>NUL
+python --version 1>NUL 2>NUL
 IF %ERRORLEVEL% == 1 (
 echo "Install Python on path for Windows build."
 exit /b %ERRORLEVEL%
@@ -89,18 +80,18 @@ exit /b %ERRORLEVEL%
 echo Commencing build of native components
 echo.
 
-echo %__srcDir%\vcbuild.bat %CMAKE_BUILD_TYPE% %__BuildArch% shared
-call %__srcDir%\vcbuild.bat %CMAKE_BUILD_TYPE% %__BuildArch% shared
+echo %__srcDir%\vcbuild.bat %BUILD_TYPE% %__TargetArch% shared
+call %__srcDir%\vcbuild.bat %BUILD_TYPE% %__TargetArch% shared
 
 IF EXIST %__binDir% (
-rmdir /s /q  %__binDir% 2>&1
-IF %ERRORLEVEL% == 1 (
-echo "unable to delete""
-)
+    rmdir /s /q  %__binDir% 2>&1
+    IF %ERRORLEVEL% == 1 (
+    echo "Unable to delete BinDir"
+    )
 )
 mkdir %__binDir%
-echo mklink /J %__binRuntimeDir% %__buildOutputDir% 2>&1
-mklink /J %__binRuntimeDir% %__buildOutputDir% 2>&1
+echo xcopy /E %__binRuntimeDir% %__buildOutputDir% 2>&1
+xcopy /E %__binRuntimeDir% %__buildOutputDir% 2>&1
 IF %ERRORLEVEL% == 1 (
   echo "Unable to copy output of submodule build"
   exit /b %ERRORLEVEL%

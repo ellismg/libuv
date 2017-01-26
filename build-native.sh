@@ -10,8 +10,7 @@ OBJECT_ROOT="$REPO_ROOT/obj"
 SUBMODULE_ROOT="$REPO_ROOT/src/libuv"
 
 BUILD_TYPE=Debug
-CMAKE_BUILD_TYPE=Debug
-BUILD_ARCH=x64
+TARGET_ARCH=x64
 HOST_OS=Linux
 FILE_EXTENSION=".so"
 #with the given install script this works on macs, need to override glibtoolize
@@ -45,14 +44,12 @@ while :; do
             case $(echo $1 | awk '{print tolower($0)}') in
                 release)
                     BUILD_TYPE=Release
-                    CMAKE_BUILD_TYPE=RelWithDebInfo
                 ;;
                 debug)
                     BUILD_TYPE=Debug
-                    CMAKE_BUILD_TYPE=Debug
                 ;;
                 arm)
-                    BUILD_ARCH=arm
+                    TARGET_ARCH=arm
                 ;;
                 *)
                     echo "Unknown Configuration '$1'"
@@ -69,8 +66,8 @@ while :; do
     shift
 done
 
-BINARY_DIR="$BINARY_ROOT/$TARGET_OS.$BUILD_ARCH.$BUILD_TYPE"
-OBJECT_DIR="$OBJECT_ROOT/$TARGET_OS.$BUILD_ARCH.$BUILD_TYPE"
+BINARY_DIR="$BINARY_ROOT/$TARGET_OS.$TARGET_ARCH.$BUILD_TYPE"
+OBJECT_DIR="$OBJECT_ROOT/$TARGET_OS.$TARGET_ARCH.$BUILD_TYPE"
 UPDATE_SUBMODULE="git submodule update --init --recursive"
 
 #get submodules if not present
@@ -105,12 +102,6 @@ if [ $? -ne 0 ]; then
 fi
 (sh configure --prefix=$BINARY_DIR)
 (set x; make -j)
-if [ $? -ne 0 ]; then
-    echo "ERROR: Build failed."
-    popd > /dev/null 2>&1
-    exit 1
-fi
-(set x; make check -j)
 if [ $? -ne 0 ]; then
     echo "ERROR: Build failed."
     popd > /dev/null 2>&1
