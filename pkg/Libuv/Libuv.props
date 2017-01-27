@@ -16,6 +16,9 @@
     <OfficialBuildRID Include="osx.10.10-x64">
       <OSGroup>OSX</OSGroup>
     </OfficialBuildRID>
+     <OfficialBuildRID Include="osx.10.11-x64">
+      <OSGroup>OSX</OSGroup>
+    </OfficialBuildRID>
     <OfficialBuildRID Include="rhel.7-x64" />
     <OfficialBuildRID Include="ubuntu.14.04-x64" />
     <OfficialBuildRID Include="ubuntu.16.04-x64" />
@@ -41,13 +44,15 @@
     <BuildRID Include="$(PackageRID)">
       <Platform Condition="'$(ArchGroup)' == 'x64'">amd64</Platform>
       <Platform Condition="'$(ArchGroup)' != 'x64'">$(ArchGroup)</Platform>
-      <OSGroup>$(BuildConfiguration_OSGroup)</OSGroup>
+      <OSGroup>$(OSGroup)</OSGroup>
     </BuildRID>
   </ItemGroup>
 
   <ItemGroup>
     <_project Include="@(BuildRID)">
       <OSGroup Condition="'%(OSGroup)' == ''">Linux</OSGroup>
+      <OSGroup Condition="$(PackageRID.StartsWith('win'))">Windows_NT</OSGroup>
+      <OSGroup Condition="$(PackageRID.StartsWith('osx'))">OSX</OSGroup>
       <Platform Condition="'%(Platform)' == ''">amd64</Platform>
       <PackageTargetRuntime>%(Identity)</PackageTargetRuntime>
       <AdditionalProperties>PackageTargetRuntime=%(Identity);OSGroup=%(OSGroup);Platform=%(Platform)</AdditionalProperties>
