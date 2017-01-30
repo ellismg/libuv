@@ -19,7 +19,7 @@ set GYP_MSVS_VERSION=2015
 if [%1] == [] goto :ToolsVersion
 if /i [%1] == [Release]     ( set BUILD_TYPE=release&&shift&goto Arg_Loop)
 if /i [%1] == [Debug]       ( set BUILD_TYPE=debug&&shift&goto Arg_Loop)
-if /i [%1] == [arm]         ( set __TargetArch=arm&&set __VCBuildArch=x86_arm&&set __SDKVersion="-DCMAKE_SYSTEM_VERSION=10.0"&&shift&goto Arg_Loop)
+if /i [%1] == [arm]         ( set __TargetArch=arm&&set __VCBuildArch=x86_arm&&shift&goto Arg_Loop)
 if /i [%1] == [x86]         ( set __TargetArch=x86&&set __VCBuildArch=x86&&shift&goto Arg_Loop)
 if /i [%1] == [x64]         ( set __TargetArch=x64&&set __VCBuildArch=x86_amd64&&shift&goto Arg_Loop)
 if /i [%1] == [arm64]       ( set __TargetArch=arm64&&set __VCBuildArch=arm64&&shift&goto Arg_Loop)

@@ -48,11 +48,23 @@ while :; do
                 debug)
                     BUILD_TYPE=Debug
                 ;;
+                *)
+                    echo "Unknown Configuration '$1'"
+                    exit 1
+                ;;
+            esac
+            ;;
+        --platform)
+            shift
+            case $(echo $1 | awk '{print tolower($0)}') in
+                x64)
+                    TARGET_ARCH=x64
+                ;;
                 arm)
                     TARGET_ARCH=arm
                 ;;
                 *)
-                    echo "Unknown Configuration '$1'"
+                    echo "Unknown Platform '$1'"
                     exit 1
                 ;;
             esac
