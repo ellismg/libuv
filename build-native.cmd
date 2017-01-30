@@ -1,31 +1,37 @@
 ::Build-native windows
 @echo off
-setlocal
 
 set BUILD_TYPE=Debug
-set HOST_OS=Windows_NT
+set __TargetArch=x64
+set __TargetOS=Windows_NT
+
+:Arg_Loop
+if [%1] == [] goto :Args_Parsed
+if /i [%1] == [--configuration] (
+  if /i [%2] == [release] ( set BUILD_TYPE=Release&&shift&&shift&&goto Arg_Loop )
+  if /i [%2] == [debug]   ( set BUILD_TYPE=Debug&&shift&&shift&&goto Arg_Loop )
+  echo "Unknown Configuration: '%1'"
+  exit /b 1
+)
+if /i [%1] == [--platform] (
+  if /i [%2] == [arm]     ( set __TargetArch=arm&&set __VCBuildArch=x86_arm&&shift&&shift&&goto Arg_Loop )
+  if /i [%2] == [x86]     ( set __TargetArch=x86&&set __VCBuildArch=x86&&shift&&shift&&goto Arg_Loop )
+  if /i [%2] == [x64]     ( set __TargetArch=x64&&set __VCBuildArch=x86_amd64&&shift&&shift&&goto Arg_Loop )
+  if /i [%2] == [arm64]   ( set __TargetArch=arm64&&set __VCBuildArch=arm64&&shift&&shift&&goto Arg_Loop )
+  echo "Unknown Platform: '%1'"
+  exit /b 1
+)
+echo "Unknown Argument: '%1'
+exit /b 1
+
+:Args_Parsed
 
 set __binDir=%~dp0\bin
 set __srcDir=%~dp0\src\libuv
-set __TargetArch=x64
-set __TargetOS=Windows_NT
 set __binRuntimeDir=%~dp0\bin\%__TargetOS%.%__TargetArch%.%BUILD_TYPE%
 set __buildOutputDir=%~dp0\src\libuv\%BUILD_TYPE%
 :: All CI machines use this
 set GYP_MSVS_VERSION=2015
-
-:Arg_Loop
-:: Since the native build requires some configuration information before msbuild is called, we have to do some manual args parsing
-if [%1] == [] goto :ToolsVersion
-if /i [%1] == [Release]     ( set BUILD_TYPE=release&&shift&goto Arg_Loop)
-if /i [%1] == [Debug]       ( set BUILD_TYPE=debug&&shift&goto Arg_Loop)
-if /i [%1] == [arm]         ( set __TargetArch=arm&&set __VCBuildArch=x86_arm&&shift&goto Arg_Loop)
-if /i [%1] == [x86]         ( set __TargetArch=x86&&set __VCBuildArch=x86&&shift&goto Arg_Loop)
-if /i [%1] == [x64]         ( set __TargetArch=x64&&set __VCBuildArch=x86_amd64&&shift&goto Arg_Loop)
-if /i [%1] == [arm64]       ( set __TargetArch=arm64&&set __VCBuildArch=arm64&&shift&goto Arg_Loop)
-
-shift
-goto :Arg_Loop
 
 :: update sub module if required
 set _TMP=
@@ -40,7 +46,6 @@ IF {%_TMP%}=={} (
   echo "Submodule already updated."
 )
 
-:ToolsVersion
 :: Determine the tools version to pass to cmake/msbuild
 if not defined VisualStudioVersion (
     if defined VS140COMNTOOLS (
@@ -90,8 +95,10 @@ IF EXIST %__binDir% (
     )
 )
 mkdir %__binDir%
-echo xcopy /E %__binRuntimeDir% %__buildOutputDir% 2>&1
-xcopy /E %__binRuntimeDir% %__buildOutputDir% 2>&1
+mkdir %__binRuntimeDir%
+
+echo xcopy /E /I %__buildOutputDir% %__binRuntimeDir% 2>&1
+xcopy /E /I %__buildOutputDir% %__binRuntimeDir% 2>&1
 IF %ERRORLEVEL% == 1 (
   echo "Unable to copy output of submodule build"
   exit /b %ERRORLEVEL%
