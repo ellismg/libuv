@@ -1,6 +1,8 @@
 ﻿<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-  <OsEnvironment Condition="'$(OsEnvironment)'==''">$(OS)</OsEnvironment>
+    <ArchGroup Condition="'$(ArchGroup)'==''">x64</ArchGroup>
+    <ConfigurationGroup Condition="'$(ConfigurationGroup)'==''">Debug</ConfigurationGroup>
+    <OsEnvironment Condition="'$(OsEnvironment)'==''">$(OS)</OsEnvironment>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -9,14 +11,12 @@
     <!-- Output directories -->
     <BinDir Condition="'$(BinDir)'==''">$(ProjectDir)bin/</BinDir>
     <ObjDir Condition="'$(ObjDir)'==''">$(ProjectDir)obj/</ObjDir>
-    <PackagesOutDir Condition="'$(PackagesOutDir)'==''">$(BinDir)packages/</PackagesOutDir>
+    <PackagesOutDir Condition="'$(PackagesOutDir)'==''">$(BinDir)packages/$(ConfigurationGroup)/</PackagesOutDir>
 
     <!-- Input Directories -->
     <ToolsDir Condition="'$(ToolsDir)'==''">$(ProjectDir)Tools/</ToolsDir>
     <BuildToolsTaskDir Condition="'$(BuildToolsTargets45)' == 'true' OR '$(MSBuildRuntimeType)' != 'Core'">$(ToolsDir)net45/</BuildToolsTaskDir>
     <PackagingTaskDir Condition="'$(BuildToolsTaskDir)' != ''">$(BuildToolsTaskDir)</PackagingTaskDir>
-    <ArchGroup Condition="'$(ArchGroup)'==''">x64</ArchGroup>
-    <ConfigurationGroup Condition="'$(ConfigurationGroup)'==''">Debug</ConfigurationGroup>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'==''">$(ObjDir)</BaseIntermediateOutputPath>
   </PropertyGroup>
 
