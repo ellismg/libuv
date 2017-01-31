@@ -80,16 +80,9 @@ done
 
 BINARY_DIR="$BINARY_ROOT/$TARGET_OS.$TARGET_ARCH.$BUILD_TYPE"
 OBJECT_DIR="$OBJECT_ROOT/$TARGET_OS.$TARGET_ARCH.$BUILD_TYPE"
-UPDATE_SUBMODULE="git submodule update --init --recursive"
 
-#get submodules if not present
-if [ "$(ls -A $SUBMODULE_ROOT)" ]; then
-     echo "Submodule already updated."
-else
-    echo "Updating submodule"
-    echo $UPDATE_SUBMODULE
-    eval $UPDATE_SUBMODULE
-fi
+git submodule init
+git submodule update
 
 mkdir -p $BINARY_DIR
 mkdir -p $OBJECT_DIR

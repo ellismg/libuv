@@ -34,17 +34,8 @@ set __buildOutputDir=%~dp0\src\libuv\%BUILD_TYPE%
 set GYP_MSVS_VERSION=2015
 
 :: update sub module if required
-set _TMP=
-for /f "delims=" %%a in ('dir /b %__srcDir%') do set _TMP=%%a
-
-IF {%_TMP%}=={} (
-  echo "Updating submodule"
-  set _update_submodule = "git submodule update --init --recursive"
-  echo %_update_submodule%
-  call %_update_submodule%
-) ELSE (
-  echo "Submodule already updated."
-)
+git submodule init
+git submodule update
 
 :: Determine the tools version to pass to cmake/msbuild
 if not defined VisualStudioVersion (
