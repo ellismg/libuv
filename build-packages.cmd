@@ -18,12 +18,21 @@ echo "Unknown Argument: '%1'
 exit /b 1
 
 :Args_Done
-call %~dp0init-tools.cmd %*
+
+if not defined VisualStudioVersion (
+  if defined VS140COMNTOOLS (
+    call "%VS140COMNTOOLS%\VsDevCmd.bat"
+    goto :Run
+  )
+  echo Error: Visual Studio 2015 required.
+  echo        Please see https://github.com/dotnet/corefx/blob/master/Documentation/project-docs/developer-guide.md for build instructions.
+  exit /b 1
+)
+
+:Run
+call %~dp0init-tools.cmd
 if NOT [%ERRORLEVEL%]==[0] exit /b 1
 
 :PackageBuild
-call msbuild /flp:v=diag "%~dp0\pkg\Libuv\Libuv.builds" /p:PackageRID=%__PackageRID% /p:ConfigurationGroup=%BUILD_TYPE% 2>&1
-if NOT [%ERRORLEVEL%]==[0] (
-  echo "Check msbuild path."
-  exit /b %ERRORLEVEL%
-)
+call %~dp0Tools\msbuild.cmd /flp:v=diag "%~dp0pkg\Libuv\Libuv.builds" /p:PackageRID=%__PackageRID% /p:ConfigurationGroup=%BUILD_TYPE%
+if NOT [%ERRORLEVEL%]==[0] exit /b 1
