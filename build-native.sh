@@ -13,8 +13,6 @@ BUILD_TYPE=Debug
 TARGET_ARCH=x64
 HOST_OS=Linux
 FILE_EXTENSION=".so"
-#with the given install script this works on macs, need to override glibtoolize
-export LIBTOOLIZE="libtoolize"
 
 case $(uname -s) in
     Darwin)
