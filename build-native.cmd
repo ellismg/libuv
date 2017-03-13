@@ -4,6 +4,7 @@
 set BUILD_TYPE=Debug
 set __TargetArch=x64
 set __TargetOS=Windows_NT
+set __SkipGit=false
 
 :Arg_Loop
 if [%1] == [] goto :Args_Parsed
@@ -21,6 +22,7 @@ if /i [%1] == [--platform] (
   echo "Unknown Platform: '%1'"
   exit /b 1
 )
+if /i [%1] == [--skip-git] ( set __SkipGit=true&&shift&&goto Arg_Loop )
 echo "Unknown Argument: '%1'
 exit /b 1
 
@@ -34,8 +36,10 @@ set __buildOutputDir=%~dp0\src\libuv\%BUILD_TYPE%
 set GYP_MSVS_VERSION=2015
 
 :: update sub module if required
-git submodule init
-git submodule update
+if "%__SkipGit%"=="false" (
+  git submodule init
+  git submodule update
+)
 
 :: Determine the tools version to pass to cmake/msbuild
 if not defined VisualStudioVersion (

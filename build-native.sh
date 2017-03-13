@@ -67,6 +67,9 @@ while :; do
                 ;;
             esac
             ;;
+        --skip-git)
+            SKIP_GIT=true
+            ;;
         *)
             echo "Unknown Argument '$1'"
             exit 1
@@ -79,8 +82,10 @@ done
 BINARY_DIR="$BINARY_ROOT/$TARGET_OS.$TARGET_ARCH.$BUILD_TYPE"
 OBJECT_DIR="$OBJECT_ROOT/$TARGET_OS.$TARGET_ARCH.$BUILD_TYPE"
 
-git submodule init
-git submodule update
+if [ -z "$SKIP_GIT" ]; then
+    git submodule init
+    git submodule update
+fi
 
 mkdir -p $BINARY_DIR
 mkdir -p $OBJECT_DIR
