@@ -2,8 +2,10 @@
 @echo off
 setlocal
 
+set "__ProjectDir=%~dp0"
 set __PackageRID=win7-x64
 set BUILD_TYPE=Debug
+set __BuildVersionFile=
 
 :Arg_Loop
 if [%1] == [] goto :Args_Done
@@ -14,6 +16,7 @@ if /i [%1] == [--configuration] (
   exit /b 1
 )
 if /i [%1] == [--runtime-id] ( set __PackageRID=%2&&shift&&shift&&goto Arg_Loop )
+if /i [%1] == [--build-version-file] ( set __BuildVersionFile=%2&&shift&&shift&&goto Arg_Loop )
 echo "Unknown Argument: '%1'
 exit /b 1
 
@@ -30,9 +33,9 @@ if not defined VisualStudioVersion (
 )
 
 :Run
-call %~dp0init-tools.cmd
+call %__ProjectDir%init-tools.cmd
 if NOT [%ERRORLEVEL%]==[0] exit /b 1
 
 :PackageBuild
-call %~dp0Tools\msbuild.cmd /flp:v=diag "%~dp0pkg\Libuv\Libuv.builds" /p:PackageRID=%__PackageRID% /p:ConfigurationGroup=%BUILD_TYPE%
+call %__ProjectDir%Tools\msbuild.cmd /flp:v=diag "%__ProjectDir%pkg\Libuv\Libuv.builds" /p:PackageRID=%__PackageRID% /p:ConfigurationGroup=%BUILD_TYPE% /p:BuildVersionFile=%__BuildVersionFile%
 if NOT [%ERRORLEVEL%]==[0] exit /b 1

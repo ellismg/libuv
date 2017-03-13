@@ -32,6 +32,10 @@ while :; do
             shift
             PACKAGE_RID=$(echo $1 | awk '{print tolower($0)}')
             ;;
+        --build-version-file)
+            shift
+            BUILD_VERSION_FILE="$1"
+            ;;
         *)
             echo "Unknown Argument '$1'"
             exit 1
@@ -42,4 +46,4 @@ while :; do
 done
 
 "$SCRIPT_ROOT/init-tools.sh"
-"$SCRIPT_ROOT/Tools/msbuild.sh" /flp:v=diag "$SCRIPT_ROOT/pkg/Libuv/Libuv.builds" /p:PackageRID=$PACKAGE_RID /p:ConfigurationGroup=$BUILD_TYPE
+"$SCRIPT_ROOT/Tools/msbuild.sh" /flp:v=diag "$SCRIPT_ROOT/pkg/Libuv/Libuv.builds" /p:PackageRID=$PACKAGE_RID /p:ConfigurationGroup=$BUILD_TYPE /p:BuildVersionFile=$BUILD_VERSION_FILE
